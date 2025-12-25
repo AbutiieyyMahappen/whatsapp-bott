@@ -1,13 +1,6 @@
 import pkg from "@whiskeysockets/baileys";
 const { default: makeWASocket, useMultiFileAuthState } = pkg;
 
-import readline from "readline";
-
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
-});
-
 async function startBot() {
   const { state, saveCreds } = await useMultiFileAuthState("auth");
 
@@ -18,11 +11,16 @@ async function startBot() {
 
   sock.ev.on("creds.update", saveCreds);
 
+  // Pairing using ENV variable
   if (!state.creds.registered) {
-    rl.question("Enter WhatsApp number (with country code): ", async (number) => {
-      const code = await sock.requestPairingCode(number.trim());
-      console.log("PAIRING CODE:", code);
-    });
+    const phone = process.env.PHONE_NUMBER;
+    if (!phone) {
+      console.log("❌ PHONE_NUMBER env variable missing");
+      process.exit(1);
+    }
+
+    const code = await sock.requestPairingCode(phone);
+    console.log("✅ PAIRING CODE:", code);
   }
 
   sock.ev.on("messages.upsert", async ({ messages }) => {
@@ -33,9 +31,9 @@ async function startBot() {
       msg.message.conversation ||
       msg.message.extendedTextMessage?.text;
 
-    if (text === "hi") {
+    if (text?.toLowerCase() === "hi") {
       await sock.sendMessage(msg.key.remoteJid, {
-        text: "✅ Bot connected using phone number!"
+        text: "🤖 Bot is alive on Render!"
       });
     }
   });
