@@ -1,6 +1,5 @@
-import makeWASocket, {
-  useMultiFileAuthState
-} from "@whiskeysockets/baileys";
+import pkg from "@whiskeysockets/baileys";
+const { default: makeWASocket, useMultiFileAuthState } = pkg;
 
 import readline from "readline";
 
@@ -21,7 +20,7 @@ async function startBot() {
 
   if (!state.creds.registered) {
     rl.question("Enter WhatsApp number (with country code): ", async (number) => {
-      const code = await sock.requestPairingCode(number);
+      const code = await sock.requestPairingCode(number.trim());
       console.log("PAIRING CODE:", code);
     });
   }
@@ -36,7 +35,7 @@ async function startBot() {
 
     if (text === "hi") {
       await sock.sendMessage(msg.key.remoteJid, {
-        text: "Hello 👋 Bot connected using phone number!"
+        text: "✅ Bot connected using phone number!"
       });
     }
   });
